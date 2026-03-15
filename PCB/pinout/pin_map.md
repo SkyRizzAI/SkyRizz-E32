@@ -415,7 +415,14 @@ Local firmware-relevant nets hanging off the XL9535:
 
 ## External connectors
 
-### `C_I2C` — External I2C connector
+PCB silkscreen labels for the external headers are:
+
+- `IO 1` = `C_P0`
+- `I2C` = `C_I2C`
+- `IO 2` = `C_P1-3`
+- `IO 3` = `C_P4-7`
+
+### `C_I2C` — External I2C connector (`I2C` on PCB silk)
 
 Firmware access: Direct breakout of 3V3, GND, and the shared `GPIO47`/`GPIO48` I2C bus.
 
@@ -428,7 +435,7 @@ Firmware access: Direct breakout of 3V3, GND, and the shared `GPIO47`/`GPIO48` I
 | `5` | `5` | `GND` | Ground | Ground. |
 | `6` | `6` | `GND` | Ground | Ground. |
 
-### `C_P0` — External P0 connector
+### `C_P0` — External P0 connector (`IO 1` on PCB silk)
 
 Firmware access: Direct external GPIO on `GPIO1` plus 3V3/GND.
 
@@ -440,7 +447,7 @@ Firmware access: Direct external GPIO on `GPIO1` plus 3V3/GND.
 | `4` | `4` | `GND` | Ground | Ground. |
 | `5` | `5` | `GND` | Ground | Ground. |
 
-### `C_P1-3` — External P1-P3 connector
+### `C_P1-3` — External P1-P3 connector (`IO 2` on PCB silk)
 
 Firmware access: External GPIOs through the XL9535 expander (`P07`, `P16`, `P15`).
 
@@ -454,7 +461,7 @@ Firmware access: External GPIOs through the XL9535 expander (`P07`, `P16`, `P15`
 | `6` | `6` | `GND` | Ground | Ground. |
 | `7` | `7` | `GND` | Ground | Ground. |
 
-### `C_P4-7` — External P4-P7 connector
+### `C_P4-7` — External P4-P7 connector (`IO 3` on PCB silk)
 
 Firmware access: External GPIOs through the XL9535 expander (`P14`, `P13`, `P10`, `P11`).
 

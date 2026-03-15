@@ -1,8 +1,8 @@
-# SkyRizz E32 module pin capabilities
+# SkyRizz E32 ESP32-S3 module pin capabilities
 
 - Module symbol / part: `ESP32-S3-WROOM-1-N16R8`
 - Generated to help build a visual pinout diagram in the style of common ESP32 reference images.
-- Complementary board wiring reference: `pin_map.md`
+- Complementary board wiring reference: `skyrizz_e32_esp32s3_pin_map.md`
 
 This file answers two different questions for every module pin:
 
@@ -12,7 +12,8 @@ This file answers two different questions for every module pin:
 ## Quick takeaways
 
 - Public module pins in the EasyEDA symbol: `41` total, including power and ground pins.
-- The only intentionally direct external native ESP32 GPIO on this PCB is **module pin 39 / GPIO1 / net `P0`**.
+- The board-silk external headers are **`IO 1` = `C_P0`**, **`I2C` = `C_I2C`**, **`IO 2` = `C_P1-3`**, and **`IO 3` = `C_P4-7`**.
+- The only intentionally direct external native ESP32 GPIO on this PCB is **`IO 1` / module pin 39 / GPIO1 / net `P0`**.
 - The main shared buses are **module pins 24-25 (`GPIO47/48`)** for I2C and **module pins 33-36 (`GPIO40/41/42/44`)** for SPI.
 - Native USB is hard-wired on **module pins 13-14 (`GPIO19/20`)** to the USB-C connector.
 - Module pins **28-30 (`GPIO35/36/37`)** have no board trace in this PCB netlist, so they are not broken out to any connector or onboard device.
@@ -26,6 +27,63 @@ This file answers two different questions for every module pin:
 - Default UART IOMUX pins: `components/soc/esp32s3/include/soc/uart_pins.h` in `espressif/esp-idf`
 - USB PHY pins: `components/soc/esp32s3/include/soc/usb_pins.h` in `espressif/esp-idf`
 - External JTAG pin mapping for ESP32-S3: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/jtag-debugging/configure-other-jtag.html>
+
+## External breakout headers on the PCB
+
+These are the headers you are likely to care about in firmware when connecting external hardware:
+
+| PCB silk | EasyEDA designator | Signals exposed | Firmware path |
+| --- | --- | --- | --- |
+| `IO 1` | `C_P0` | `P0`, `3V3`, `GND` | `P0` is direct `GPIO1`. |
+| `I2C` | `C_I2C` | `SCL`, `SDA`, `3V3`, `GND` | Direct breakout of `GPIO48` / `GPIO47`. |
+| `IO 2` | `C_P1-3` | `P1`, `P2`, `P3`, `3V3`, `GND` | XL9535-backed GPIOs over I2C on `GPIO47/48`, with interrupt on `GPIO43`. |
+| `IO 3` | `C_P4-7` | `P4`, `P5`, `P6`, `P7`, `3V3`, `GND` | XL9535-backed GPIOs over I2C on `GPIO47/48`, with interrupt on `GPIO43`. |
+
+### `IO 1` / `C_P0`
+
+| Header pad | Signal | Firmware path |
+| --- | --- | --- |
+| `1` | `3V3` | Power only |
+| `2` | `GND` | Ground |
+| `3` | `P0` | Direct `GPIO1` |
+| `4` | `GND` | Ground |
+| `5` | `GND` | Ground |
+
+### `I2C` / `C_I2C`
+
+| Header pad | Signal | Firmware path |
+| --- | --- | --- |
+| `1` | `3V3` | Power only |
+| `2` | `GND` | Ground |
+| `3` | `SCL` | Direct `GPIO48` |
+| `4` | `SDA` | Direct `GPIO47` |
+| `5` | `GND` | Ground |
+| `6` | `GND` | Ground |
+
+### `IO 2` / `C_P1-3`
+
+| Header pad | Signal | Firmware path |
+| --- | --- | --- |
+| `1` | `3V3` | Power only |
+| `2` | `GND` | Ground |
+| `3` | `P1` | XL9535 `P07` via `GPIO47/48`, interrupt on `GPIO43` |
+| `4` | `P2` | XL9535 `P16` via `GPIO47/48`, interrupt on `GPIO43` |
+| `5` | `P3` | XL9535 `P15` via `GPIO47/48`, interrupt on `GPIO43` |
+| `6` | `GND` | Ground |
+| `7` | `GND` | Ground |
+
+### `IO 3` / `C_P4-7`
+
+| Header pad | Signal | Firmware path |
+| --- | --- | --- |
+| `1` | `3V3` | Power only |
+| `2` | `GND` | Ground |
+| `3` | `P4` | XL9535 `P14` via `GPIO47/48`, interrupt on `GPIO43` |
+| `4` | `P5` | XL9535 `P13` via `GPIO47/48`, interrupt on `GPIO43` |
+| `5` | `P6` | XL9535 `P10` via `GPIO47/48`, interrupt on `GPIO43` |
+| `6` | `P7` | XL9535 `P11` via `GPIO47/48`, interrupt on `GPIO43` |
+| `7` | `GND` | Ground |
+| `8` | `GND` | Ground |
 
 ## Diagram edge order
 
@@ -139,6 +197,7 @@ Touch naming uses the current ESP-IDF capacitive-touch channel naming from the s
 
 - **Direct external native GPIO:** module pin `39` / `GPIO1` / net `P0`.
 - **Shared I2C bus:** module pins `24-25` / `GPIO47-48`.
+- **Board-silk external headers:** `IO 1`, `I2C`, `IO 2`, `IO 3`.
 - **Shared SPI bus:** module pins `33-36` / `GPIO40/41/42/44`.
 - **Touch interrupt:** module pin `38` / `GPIO2`.
 - **USB:** module pins `13-14` / `GPIO19-20`.
