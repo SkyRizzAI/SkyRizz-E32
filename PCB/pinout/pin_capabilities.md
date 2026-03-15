@@ -2,7 +2,7 @@
 
 - Module symbol / part: `ESP32-S3-WROOM-1-N16R8`
 - Generated to help build a visual pinout diagram in the style of common ESP32 reference images.
-- Complementary board wiring reference: `skyrizz_e32_esp32s3_pin_map.md`
+- Complementary board wiring reference: `pin_map.md`
 
 This file answers two different questions for every module pin:
 
@@ -15,6 +15,7 @@ This file answers two different questions for every module pin:
 - The board-silk external headers are **`IO 1` = `C_P0`**, **`I2C` = `C_I2C`**, **`IO 2` = `C_P1-3`**, and **`IO 3` = `C_P4-7`**.
 - The only intentionally direct external native ESP32 GPIO on this PCB is **`IO 1` / module pin 39 / GPIO1 / net `P0`**.
 - The main shared buses are **module pins 24-25 (`GPIO47/48`)** for I2C and **module pins 33-36 (`GPIO40/41/42/44`)** for SPI.
+- The shared I2C + XL9535 path also owns the local controls: **`IND` user LED**, **`SW1`**, **`SW2`**, **`PB1`**, **`PB2`**, and **`SW3`**.
 - Native USB is hard-wired on **module pins 13-14 (`GPIO19/20`)** to the USB-C connector.
 - Module pins **28-30 (`GPIO35/36/37`)** have no board trace in this PCB netlist, so they are not broken out to any connector or onboard device.
 - `GPIO0`, `GPIO3`, `GPIO45`, and `GPIO46` are strapping pins and are also used by onboard peripherals here, so treat them carefully at boot.
@@ -84,6 +85,20 @@ These are the headers you are likely to care about in firmware when connecting e
 | `6` | `P7` | XL9535 `P11` via `GPIO47/48`, interrupt on `GPIO43` |
 | `7` | `GND` | Ground |
 | `8` | `GND` | Ground |
+
+## Other firmware-visible board controls and indicators
+
+These are the board parts that often matter during bring-up and factory testing even though some of them are not direct ESP32 GPIOs:
+
+| Board part | Net(s) | Firmware path | Notes |
+| --- | --- | --- | --- |
+| `RGB1` / `RGB2` | `RGB`, `$5N3637` | Direct `GPIO46` WS2812-style chain | `RGB1 DIN` is driven from `GPIO46`; `RGB1 DOUT` feeds `RGB2 DIN`. |
+| `IND` | `U_LED`, `$5N1166` | XL9535 `P17` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | User / indicator LED driven through `R16`; not a native ESP32 pin. |
+| `SW1` | `P8` | XL9535 `P12` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | Local switch to ground with `R37` pull-up to `3V3`. |
+| `SW2` | `P9` | XL9535 `P04` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | Local switch to ground with `R38` pull-up to `3V3`. |
+| `PB1` | `P10` | XL9535 `P05` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | Local push button with `R7` pull-up and `C21` RC network. |
+| `PB2` | `P11` | XL9535 `P06` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | Local push button with `R6` pull-up and `C20` RC network. |
+| `SW3` | `P7` | XL9535 `P11` via shared I2C on `GPIO47/48`, interrupt on `GPIO43` | Local switch shared with the external `IO 3` / `P7` header signal. |
 
 ## Diagram edge order
 
@@ -198,7 +213,46 @@ Touch naming uses the current ESP-IDF capacitive-touch channel naming from the s
 - **Direct external native GPIO:** module pin `39` / `GPIO1` / net `P0`.
 - **Shared I2C bus:** module pins `24-25` / `GPIO47-48`.
 - **Board-silk external headers:** `IO 1`, `I2C`, `IO 2`, `IO 3`.
+- **Local XL9535 controls:** `IND`, `SW1`, `SW2`, `PB1`, `PB2`, `SW3`.
 - **Shared SPI bus:** module pins `33-36` / `GPIO40/41/42/44`.
 - **Touch interrupt:** module pin `38` / `GPIO2`.
 - **USB:** module pins `13-14` / `GPIO19-20`.
 - **Unrouted in this PCB:** module pins `28-30` / `GPIO35-37`.
+
+## SkyRizz E32 board module inventory
+
+This is the quick “what is actually on the board?” list. It focuses on the firmware-visible blocks and external interfaces, not every power or passive support part.
+
+| Category | Designator / block | Part / function | Primary firmware path |
+| --- | --- | --- | --- |
+| Main module | `U1` | `ESP32-S3-WROOM-1-N16R8` main MCU/module | All board functions originate here |
+| Sensor | `HUM` | AHT20 humidity / temperature sensor | Shared I2C on `GPIO47` / `GPIO48` |
+| Sensor | `LS` | LTR-303ALS ambient-light sensor | Shared I2C on `GPIO47` / `GPIO48` |
+| Sensor | `U5` | SC7A20 accelerometer | Shared I2C on `GPIO47` / `GPIO48` |
+| Touch controller | `U10` | TSC2007 resistive touch controller | I2C + `GPIO2` interrupt + XL9535 reset |
+| Display / panel | `FPC1` | LCD + resistive-touch main flex | LCD SPI direct; touch lines go to `U10`; backlight via XL9535 |
+| Side / touch flex | `FPC2` | Touch / side-control flex connector | Shared I2C + touch interrupt/reset |
+| Camera interface | `FPC3` | Camera flex connector / camera module interface | DVP-style camera GPIOs + shared I2C + XL9535 reset |
+| Audio ADC | `U14` | ES7243E microphone ADC / codec control | Audio clocks/data on `GPIO0/3/38/39` + shared I2C |
+| Microphone | `MIC1` | Analog microphone 1 | Analog into `U14`, then digital back on `GPIO39` |
+| Microphone | `MIC2` | Analog microphone 2 | Analog into `U14`, then digital back on `GPIO39` |
+| Speaker amp | `U13` | NS4168 audio amplifier | Audio clocks/data on `GPIO0/38/45` |
+| RGB indicator | `RGB1` | First WS2812-style RGB LED | `GPIO46` serial LED data |
+| RGB indicator | `RGB2` | Second WS2812-style RGB LED | Chained from `RGB1 DOUT` |
+| User indicator | `IND` | User / indicator LED | XL9535 `P17` via shared I2C |
+| Local control | `SW1` | Local switch 1 | XL9535 `P12` / net `P8` |
+| Local control | `SW2` | Local switch 2 | XL9535 `P04` / net `P9` |
+| Local control | `PB1` | Local push button 1 | XL9535 `P05` / net `P10` |
+| Local control | `PB2` | Local push button 2 | XL9535 `P06` / net `P11` |
+| Local control | `SW3` | Local switch 3 | XL9535 `P11` / net `P7`, shared with external `IO 3` |
+| Storage | `TF1` | TF / microSD socket | Shared SPI on `GPIO40/41/42/44` |
+| SPI device | `U2` | GT30L24A3W SPI ROM / font chip | Shared SPI on `GPIO40/41/42/44`, inverted chip-select |
+| Secure element | `U18` | SE050 secure element | Shared I2C on `GPIO47` / `GPIO48` + XL9535 reset |
+| I/O expander | `U9` | XL9535 16-bit GPIO expander | Shared I2C on `GPIO47` / `GPIO48`, interrupt on `GPIO43` |
+| External header | `C_P0` / `IO 1` | Direct external GPIO header | Native `GPIO1` (`P0`) + power/ground |
+| External header | `C_I2C` / `I2C` | External I2C header | Direct breakout of `GPIO47` / `GPIO48` |
+| External header | `C_P1-3` / `IO 2` | External expander GPIO header | XL9535-backed `P1` / `P2` / `P3` |
+| External header | `C_P4-7` / `IO 3` | External expander GPIO header | XL9535-backed `P4` / `P5` / `P6` / `P7` |
+| USB interface | `USB1` | USB Type-C connector | Native USB on `GPIO19` / `GPIO20` |
+
+Practical firmware note: the board has only one intentionally direct external native ESP32 GPIO (`GPIO1` on `IO 1`). Most extra board controls and expansion pins are on the shared I2C + XL9535 path.

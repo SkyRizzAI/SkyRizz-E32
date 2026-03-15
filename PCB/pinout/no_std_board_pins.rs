@@ -9,6 +9,8 @@
 //! - `GPIO44` / `U0RXD` is reused as the shared SPI clock for TF + GT30L24A3W.
 //! - `GPIO0` is both the BOOT strap and the shared audio `BCLK` line.
 //! - GT30L24A3W `CS#` is inverted from the TF `CS` signal through `Q5`.
+//! - PCB external headers are silked as `IO 1` (`C_P0`), `I2C` (`C_I2C`),
+//!   `IO 2` (`C_P1-3`), and `IO 3` (`C_P4-7`).
 
 #![allow(dead_code)]
 
@@ -17,6 +19,37 @@ pub struct I2cBusPins {
     pub sda: u8,
     pub scl: u8,
     pub int_n: u8,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct ExternalIo1Pins {
+    pub p0: u8,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct ExternalI2cHeaderPins {
+    pub sda: u8,
+    pub scl: u8,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct RgbLedPins {
+    pub data: u8,
+    pub led_count: u8,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct UserLedPins {
+    pub drive_iox: Xl9535Pin,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct LocalInputPins {
+    pub sw1: Xl9535Pin,
+    pub sw2: Xl9535Pin,
+    pub sw3: Xl9535Pin,
+    pub pb1: Xl9535Pin,
+    pub pb2: Xl9535Pin,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -72,6 +105,27 @@ pub struct Spi3Pins {
     pub sclk: u8,
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct ExternalIo2Pins {
+    pub p1: Xl9535Pin,
+    pub p2: Xl9535Pin,
+    pub p3: Xl9535Pin,
+    pub sda: u8,
+    pub scl: u8,
+    pub int_n: u8,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct ExternalIo3Pins {
+    pub p4: Xl9535Pin,
+    pub p5: Xl9535Pin,
+    pub p6: Xl9535Pin,
+    pub p7: Xl9535Pin,
+    pub sda: u8,
+    pub scl: u8,
+    pub int_n: u8,
+}
+
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Xl9535Pin {
@@ -102,6 +156,7 @@ pub const PIN_XL9535_INT: u8 = 43;
 
 pub const PIN_TOUCH_INT: u8 = 2;
 pub const PIN_RGB_LED: u8 = 46;
+pub const RGB_LED_COUNT: u8 = 2;
 pub const PIN_EXT_P0: u8 = 1;
 
 pub const PIN_LCD_SCLK: u8 = 12;
@@ -138,11 +193,43 @@ pub const PIN_UNUSED_36: u8 = 36;
 pub const PIN_UNUSED_37: u8 = 37;
 
 pub const XL9535_I2C_ADDRESS: u8 = 0x20;
+pub const PIN_USER_LED_IOX: Xl9535Pin = Xl9535Pin::UserLed;
+pub const PIN_SW1_IOX: Xl9535Pin = Xl9535Pin::P8;
+pub const PIN_SW2_IOX: Xl9535Pin = Xl9535Pin::P9;
+pub const PIN_SW3_IOX: Xl9535Pin = Xl9535Pin::P7;
+pub const PIN_PB1_IOX: Xl9535Pin = Xl9535Pin::P10;
+pub const PIN_PB2_IOX: Xl9535Pin = Xl9535Pin::P11;
 
 pub const I2C_BUS: I2cBusPins = I2cBusPins {
     sda: PIN_I2C_SDA,
     scl: PIN_I2C_SCL,
     int_n: PIN_XL9535_INT,
+};
+
+/// PCB silk: `IO 1` / connector `C_P0`
+pub const EXT_IO1: ExternalIo1Pins = ExternalIo1Pins { p0: PIN_EXT_P0 };
+
+/// PCB silk: `I2C` / connector `C_I2C`
+pub const EXT_I2C: ExternalI2cHeaderPins = ExternalI2cHeaderPins {
+    sda: PIN_I2C_SDA,
+    scl: PIN_I2C_SCL,
+};
+
+pub const RGB_LEDS: RgbLedPins = RgbLedPins {
+    data: PIN_RGB_LED,
+    led_count: RGB_LED_COUNT,
+};
+
+pub const USER_LED: UserLedPins = UserLedPins {
+    drive_iox: PIN_USER_LED_IOX,
+};
+
+pub const LOCAL_INPUTS: LocalInputPins = LocalInputPins {
+    sw1: PIN_SW1_IOX,
+    sw2: PIN_SW2_IOX,
+    sw3: PIN_SW3_IOX,
+    pb1: PIN_PB1_IOX,
+    pb2: PIN_PB2_IOX,
 };
 
 pub const CAMERA: CameraPins = CameraPins {
@@ -191,6 +278,27 @@ pub const SPI3: Spi3Pins = Spi3Pins {
     miso: PIN_SPI3_MISO,
     mosi: PIN_SPI3_MOSI,
     sclk: PIN_SPI3_SCLK,
+};
+
+/// PCB silk: `IO 2` / connector `C_P1-3`
+pub const EXT_IO2: ExternalIo2Pins = ExternalIo2Pins {
+    p1: Xl9535Pin::P1,
+    p2: Xl9535Pin::P2,
+    p3: Xl9535Pin::P3,
+    sda: PIN_I2C_SDA,
+    scl: PIN_I2C_SCL,
+    int_n: PIN_XL9535_INT,
+};
+
+/// PCB silk: `IO 3` / connector `C_P4-7`
+pub const EXT_IO3: ExternalIo3Pins = ExternalIo3Pins {
+    p4: Xl9535Pin::P4,
+    p5: Xl9535Pin::P5,
+    p6: Xl9535Pin::P6,
+    p7: Xl9535Pin::P7,
+    sda: PIN_I2C_SDA,
+    scl: PIN_I2C_SCL,
+    int_n: PIN_XL9535_INT,
 };
 
 pub const UNUSED_ONBOARD: [u8; 3] = [PIN_UNUSED_35, PIN_UNUSED_36, PIN_UNUSED_37];

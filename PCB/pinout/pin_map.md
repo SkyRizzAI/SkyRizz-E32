@@ -10,6 +10,7 @@ This version is module-centric instead of ESP32-pin-centric. Each onboard IC, fl
 - `GPIO44 / U0RXD` is reused as SPI clock `SCLK3` for both the TF socket and `U2`.
 - `GPIO0` is both the ESP32 boot-strap pin and the shared audio `BCLK` line. Treat it carefully at boot.
 - `GPIO35`, `GPIO36`, and `GPIO37` are unused in this PCB netlist.
+- The XL9535 also owns the local user LED plus the local switches / buttons `SW1`, `SW2`, `SW3`, `PB1`, and `PB2`; those are not native ESP32 GPIOs.
 
 ### ESP32 resource summary
 
@@ -42,6 +43,12 @@ This version is module-centric instead of ESP32-pin-centric. Each onboard IC, fl
 | `MIC1/MIC2` | Analog microphones | Via ES7243E analog front-end |
 | `U13` | NS4168 | I2S-driven speaker amplifier |
 | `RGB1/RGB2` | WS2812 LEDs | `GPIO46` serial LED chain |
+| `IND` | User / indicator LED | XL9535 `P17` output through `R16` |
+| `SW1` | Local switch 1 | XL9535 `P12` input on net `P8` |
+| `SW2` | Local switch 2 | XL9535 `P04` input on net `P9` |
+| `PB1` | Local push button 1 | XL9535 `P05` input on net `P10` |
+| `PB2` | Local push button 2 | XL9535 `P06` input on net `P11` |
+| `SW3` | Local switch 3 | XL9535 `P11` input on net `P7`, shared with external `IO 3` |
 | `TF1` | microSD socket | Shared SPI3 |
 | `U2` | GT30L24A3W | Shared SPI3 with inverted `CS#` |
 | `U18` | SE050 | I2C + XL9535 reset |
@@ -298,6 +305,72 @@ Firmware access: Second WS2812-style LED in the chain after `RGB1`.
 | `2` | `GND` | `GND` | Ground | Ground. |
 | `3` | `DIN` | `$5N3637` | LED chain only: RGB1 DOUT -> RGB2 DIN | Input from `RGB1 DOUT`. |
 | `4` | `VDD` | `3V3` | 3V3 rail | 3.3 V supply rail. Not a GPIO. |
+
+### `IND` — User / indicator LED
+
+Firmware access: Driven from XL9535 `P17` on net `U_LED` through series resistor `R16`.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `GND` | Ground | LED return to ground. |
+| `2` | `2` | `$5N1166` | XL9535 `P17` -> `U_LED` -> `R16` -> `IND pad 2` | LED feed after the series resistor. Firmware controls the LED through `U9 P17`, not directly from an ESP32 GPIO. |
+
+## Local buttons and switches
+
+### `SW1` — Local switch 1
+
+Firmware access: XL9535 `P12` on net `P8`; the switch shorts `P8` to ground. `R37` pulls the line up to `3V3`.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `P8` | XL9535 `P12` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Signal side of the switch. |
+| `2` | `2` | `P8` | XL9535 `P12` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Same switched signal as pad `1`. |
+| `3` | `3` | `GND` | Ground | Ground side of the switch. |
+| `4` | `4` | `GND` | Ground | Ground side of the switch. |
+
+### `SW2` — Local switch 2
+
+Firmware access: XL9535 `P04` on net `P9`; the switch shorts `P9` to ground. `R38` pulls the line up to `3V3`.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `P9` | XL9535 `P04` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Signal side of the switch. |
+| `2` | `2` | `P9` | XL9535 `P04` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Same switched signal as pad `1`. |
+| `3` | `3` | `GND` | Ground | Ground side of the switch. |
+| `4` | `4` | `GND` | Ground | Ground side of the switch. |
+
+### `PB1` — Local push button 1
+
+Firmware access: XL9535 `P05` on net `P10`. `R7` pulls the line up to `3V3`, and `C21` forms the local RC network to ground.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `GND` | Ground | Grounded pad on the tactile switch body. |
+| `2` | `2` | `P10` | XL9535 `P05` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Signal pad to the expander input. |
+| `3` | `3` | `GND` | Ground | Grounded pad on the tactile switch body. |
+| `4` | `4` | `GND` | Ground | Grounded pad on the tactile switch body. |
+
+### `PB2` — Local push button 2
+
+Firmware access: XL9535 `P06` on net `P11`. `R6` pulls the line up to `3V3`, and `C20` forms the local RC network to ground.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `P11` | XL9535 `P06` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Signal pad to the expander input. |
+| `2` | `2` | `GND` | Ground | Grounded pad on the tactile switch body. |
+| `3` | `3` | `GND` | Ground | Grounded pad on the tactile switch body. |
+| `4` | `4` | `GND` | Ground | Grounded pad on the tactile switch body. |
+
+### `SW3` — Local switch 3
+
+Firmware access: XL9535 `P11` on net `P7`; the switch shorts `P7` to ground. `R39` pulls the line up to `3V3`, and this same net is also broken out as external `IO 3` / `C_P4-7 pad 6`.
+
+| Pad | Signal / pin label | Net | ESP32 / firmware path | Notes |
+| --- | --- | --- | --- | --- |
+| `1` | `1` | `P7` | XL9535 `P11` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Signal side of the switch; shared with the external `P7` header pin. |
+| `2` | `2` | `P7` | XL9535 `P11` via I2C (`GPIO47`/`GPIO48`), IRQ on `GPIO43` | Same switched signal as pad `1`. |
+| `3` | `3` | `GND` | Ground | Ground side of the switch. |
+| `4` | `4` | `GND` | Ground | Ground side of the switch. |
 
 ## Storage and SPI devices
 
