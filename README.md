@@ -1,6 +1,8 @@
+![SkyRizz E32 front design](PCB/assets/images/front-design.jpg)
+
 # SkyRizz E32
 
-SkyRizz E32 is a Solana-oriented development board built around an `ESP32-S3-WROOM-1-N16R8` and an `SE050` secure element. This repository includes the hardware design package in `PCB/`.
+SkyRizz E32 is an open-source, Solana-focused embedded hardware platform designed to make it easier for developers to build secure, connected, real-world products on Solana. By combining an `ESP32-S3`, an `SE050` secure element, display and touch support, camera, audio, sensors, storage, and expandable I/O with Rust-based firmware and clear reference documentation, the project provides a practical foundation for wallets, DePIN devices, point-of-sale systems, IoT products, and on-device AI agents. Our goal is to lower the barrier to Solana hardware development and help grow the ecosystem beyond web and mobile into production-ready physical devices.
 
 ## Highlights
 
