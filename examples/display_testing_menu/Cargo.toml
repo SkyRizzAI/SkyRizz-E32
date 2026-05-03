@@ -1,0 +1,23 @@
+[package]
+name = "display-menu-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+esp-hal = { version = "1.0.0", features = ["esp32s3", "unstable"] }
+esp-println = { version = "0.16.1", default-features = false, features = ["esp32s3", "jtag-serial", "colors", "critical-section"] }
+esp-backtrace = { version = "0.18.1", features = ["esp32s3", "panic-handler", "println"] }
+esp-bootloader-esp-idf = { version = "0.4.0", features = ["esp32s3"] }
+embedded-graphics = "0.8"
+embedded-hal = "1.0"
+
+[features]
+default = []
+alt-sda = []   # Use GPIO1 (C_P0 header) as SDA instead of broken GPIO47
+
+[profile.dev]
+opt-level = "s"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
